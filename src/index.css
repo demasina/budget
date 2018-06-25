@@ -1,0 +1,15 @@
+
+html {
+  height: 100%;
+}
+body {
+  color: #fff;
+  background: linear-gradient(to top right, rgba(227, 85, 255, 0.589), rgb(139, 67, 255), rgba(255, 49, 186, 0.637));
+  height: 100%;
+  font-family: sans-serif;
+}
+h1 {
+  text-align: center;
+}
+
+
