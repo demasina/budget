@@ -28,7 +28,7 @@ export class Incomes extends Component {
       <Container>
         <dl>
           <InputLine>
-            <LineTitle>Внести доход:</LineTitle>
+            <LineTitle>Доход:</LineTitle>
             <LineInput>
               <Input
                 name="transaction"
@@ -77,6 +77,7 @@ const Input = styled.input`
   width: 100%;
   padding: 0;
   margin: 0;
+  outline: none;
 `;
 const LineTitle = styled.dt`
   width: 150px;
@@ -95,6 +96,11 @@ const Button = styled.button`
   cursor: pointer;
   text-align: center;
   padding: 5px 20px;
+
+  :hover {
+    background: #6ecaff;
+    transition: 0.4s;
+  }
 `;
 
 

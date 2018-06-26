@@ -3,17 +3,26 @@ import Expanse from './Expanse.jsx';
 import Incomes from './Incomes.jsx';
 import moment from 'moment';
 import styled from 'styled-components';
-import {findLastIndex} from 'lodash';
 
 
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      date: moment(),
-      navSelected: 'expanse',
-      transactions: []
+
+    let storageState = localStorage.getItem('state');
+    let initState;
+
+    if(storageState != null) {
+      storageState = JSON.parse(storageState);
+      initState = {...storageState, date: moment(storageState.date)}
+    } else {
+      initState = {
+        date: moment(),
+        navSelected: 'expanse',
+        transactions: []
+      }
     }
+    this.state = initState;
   }
 
   handleSubtractDay = () => {
@@ -33,23 +42,40 @@ class App extends Component {
 
     const newTransaction = {
       date: TodayDate.format('DD.MM.YYYY'),
-      category,
-      sum,
-    }
+      category: category,
+      sum: sum,
+    };
 
-    const index = findLastIndex(transactions, ({date}) => {
-      const transactionDate = moment(date, 'DD.MM.YYYY');
-      return (
-        TodayDate.isBefore(transactionDate, 'day') ||
-        TodayDate.isSame(transactionDate, 'day')
-      );
+    const newTransactions = [...transactions, newTransaction];
+
+    newTransactions.sort((a, b) => {
+      const aDate = moment(a.date, 'DD.MM.YYYY');
+      const bDate = moment(b.date, 'DD.MM.YYYY');
+      return aDate.isAfter(bDate);
     });
 
-    const newTransactions = [...transactions];
-    newTransactions.splice(index === -1 ? transactions.length : index, 0, newTransaction);
-
     this.setState({transactions: newTransactions});
+  };
+
+  componentDidUpdate() {
+    const {date} = this.state;
+    localStorage.setItem(
+      'state',
+      JSON.stringify({...this.state, date: date.format()})
+    )
   }
+
+  onToday = () => {
+    const {transactions, date} = this.state;
+
+    const currentMonthTransactions = transactions.filter(
+      ({date: transactionDate}) => moment(transactionDate, 'DD.MM.YYYY').isSame(date, 'month')
+    );
+
+    const dailyMoney = currentMonthTransactions.reduce((acc, transaction) => {
+      return transaction.sum > 0 ? transaction.sum + acc : acc;
+    }, 0) / moment(date).daysInMonth();
+  };
 
   render() {
     const {date, navSelected, transactions} = this.state;
@@ -63,6 +89,7 @@ class App extends Component {
             <DateButton onClick={this.handleSubtractDay}>-</DateButton>
             <DateButton onClick={this.handleAddDay}>+</DateButton>
           </DateLine>
+          <Tod>Бюджет на сегодня: {this.onToday()}</Tod>
         </header>
         <main>
           <Nav>
@@ -149,10 +176,13 @@ const Nav = styled.nav`
 `;
 
 const Table = styled.table`
-  width: 450px;
+  width: 460px;
   text-align: center;
   padding-top: 30px;
   margin: 0 auto;
 `;
+const Tod = styled.h3`
+  text-align: center;
+`
 
 export default App;
