@@ -23,8 +23,9 @@ class App extends Component {
       }
     }
     this.state = initState;
+    // localStorage.clear()
   }
-
+  
   handleSubtractDay = () => {
     this.setState({date: this.state.date.subtract(1, 'day')});
   }
@@ -69,13 +70,38 @@ class App extends Component {
     const {transactions, date} = this.state;
 
     const currentMonthTransactions = transactions.filter(
-      ({date: transactionDate}) => moment(transactionDate, 'DD.MM.YYYY').isSame(date, 'month')
+      ({date: transactionDate}) =>
+        moment(transactionDate, 'DD.MM.YYYY').isSame(date, 'month'),
     );
 
-    const dailyMoney = currentMonthTransactions.reduce((acc, transaction) => {
-      return transaction.sum > 0 ? transaction.sum + acc : acc;
-    }, 0) / moment(date).daysInMonth();
+    const dailyMoney =
+      currentMonthTransactions.reduce(
+        (acc, transaction) =>
+          transaction.sum > 0 ? transaction.sum + acc : acc,
+        0,
+      ) / moment(date).daysInMonth();
+
+    const transactionsBeforeThisDayAndInThisDay = currentMonthTransactions.filter(
+      ({date: transactionDate}) =>
+        moment(transactionDate, 'DD.MM.YYYY').isBefore(
+          date,
+          'date',
+        ) ||
+        moment(transactionDate, 'DD.MM.YYYY').isSame(date, 'date'),
+    );
+
+    const expanseBeforeToday = transactionsBeforeThisDayAndInThisDay.reduce(
+      (acc, {sum}) => (sum < 0 ? acc + sum : acc),
+      0,
+    );
+
+    const incomeBeforeToday = date.date() * dailyMoney;
+
+    console.log({dailyMoney, expanseBeforeToday, incomeBeforeToday});
+
+    return incomeBeforeToday + expanseBeforeToday;
   };
+  
 
   render() {
     const {date, navSelected, transactions} = this.state;
@@ -184,5 +210,6 @@ const Table = styled.table`
 const Tod = styled.h3`
   text-align: center;
 `
+
 
 export default App;
